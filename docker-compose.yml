@@ -1,0 +1,85 @@
+services:
+
+
+  frontend:
+    build: ./frontend
+    container_name: lab-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mysql
+      - postgres
+
+
+  backend:
+    build: .
+    container_name: backend_app
+    restart: unless-stopped
+
+    ports:
+      - "8080:80"
+
+    env_file:
+      - .env
+
+    environment:
+      BACKEND_DB_HOST: ${BACKEND_DB_HOST}
+      BACKEND_DB_NAME: ${BACKEND_DB_NAME}
+      BACKEND_DB_USER: ${BACKEND_DB_USER}
+      BACKEND_DB_PASSWORD: ${BACKEND_DB_PASSWORD}
+
+    volumes:
+      - wp_data:/var/www/html
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    networks:
+      - wp_network
+
+
+  mysql:
+    image: mysql:8.4
+    container_name: lab-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: test_mysql
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: wordpress_phpmyadmin
+    restart: always
+
+    ports:
+      - "8081:80"
+
+    env_file:
+      - .env
+
+    environment:
+      PMA_HOST: ${PMA_HOST}
+      PMA_PORT: ${PMA_PORT}
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    networks:
+      - wp_network
+
+
+volumes:
+  wp_data:
+  db_data:
+
+
+networks:
+  wp_network:
+    driver: bridge

@@ -13,7 +13,7 @@ import rutasRoutes from './routes/rutasRoutes.js';
 // Configuración inicial
 dotenv.config();
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 
 // Middlewares globales 
 app.use(cors({
@@ -45,7 +45,7 @@ const startServer = async () => {
         app.use('/api/rutas', rutasRoutes);
 
         // ================= LANZAMIENTO =================
-        app.listen(PORT, () => {
+        app.listen(PORT, "0.0.0.0", () => {
             console.log(`🚀 Move Smart Manizales: http://localhost:${PORT}`);
             console.log(`📍 Rutas listas: /api/usuarios y /api/rutas`);
         });
