@@ -21,6 +21,7 @@ Analizar escenarios simulados de movilidad urbana para apoyar la toma de decisio
 SCRUM con tablero Kanban en GitHub Projects.
 
 -----------------------------------------------------------------------------
+### PREPARACION Y ADUITORIA:
 
 Lo que sí debemos revisar es:
 
@@ -38,44 +39,7 @@ conexión backend → MySQL
 puertos
 configuración de Docker
 
-
-MOVE-SMART/
-│
-├── frontend/
-│   ├── src/
-│   ├── public/
-│   ├── package.json
-│   ├── package-lock.json
-│   ├── vite.config.js
-│   └── Dockerfile
-│
-├── backend/
-│   ├── src/
-│   │   ├── controllers/
-│   │   ├── routes/
-│   │   ├── services/
-│   │   ├── repositories/
-│   │   ├── config/
-│   │   └── app.js
-│   │
-│   ├── package.json
-│   ├── package-lock.json
-│   ├── .env
-│   └── Dockerfile
-│
-├── database/
-│   └── init/
-│       └── 01-schema.sql
-│
-├── nginx/
-│   └── nginx.conf
-│
-├── docker-compose.yml
-│
-├── .env
-├── .gitignore
-└── README.md
-
+### contruccion de nuevas funcionalidades
 
                     ┌─────────────────────┐
                     │      NAVEGADOR      │
@@ -311,19 +275,3 @@ Proyecto-MoveSmart/
 ├── .env
 ├── .gitignore
 └── README.md
-
-RUTA DE FASES DE OPTIMIZACIÓN DE MOVE SMART:
-FASE 0  → Respaldar y establecer punto de partida
-FASE 1  → Auditoría y preparación del proyecto
-FASE 2  → Variables de entorno y seguridad
-FASE 3  → Integración de SQL + persistencia MySQL
-FASE 4  → Dockerizar Backend
-FASE 5  → Dockerizar Frontend + Nginx
-FASE 6  → Docker Compose global
-FASE 7  → Red y comunicación entre servicios
-FASE 8  → Levantamiento controlado
-FASE 9  → Pruebas Backend → DB
-FASE 10 → Pruebas Frontend → Backend
-FASE 11 → Pruebas integrales
-FASE 12 → Preparación Linux/GitHub
-FASE 13 → Documentación final
