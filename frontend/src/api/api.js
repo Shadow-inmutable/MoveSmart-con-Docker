@@ -1,31 +1,53 @@
 import axios from 'axios';
 
+// ======================================================
+// CONFIGURACIÓN DE LA API
+// ======================================================
+
 const api = axios.create({
-  baseURL: 'http://localhost:3000/api',
+    baseURL: `${import.meta.env.VITE_API_URL}/api`,
+    headers: {
+        'Content-Type': 'application/json',
+    },
 });
 
-// Este interceptor pega el token en cada llamada al backend
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+// ======================================================
+// INTERCEPTOR DE REQUEST
+// Agrega automáticamente el JWT a cada petición.
+// ======================================================
+
+api.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('token');
+
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
+// ======================================================
+// RUTAS
+// ======================================================
 
 export const getRutas = async () => {
-  const res = await fetch(`${api.defaults.baseURL}/rutas`);
-  return res.json();
+    const response = await api.get('/rutas');
+    return response.data;
 };
 
 export const getZonasCriticas = async () => {
-  const res = await fetch(`${api.defaults.baseURL}/zonas`);
-  return res.json();
+    const response = await api.get('/rutas/zonas');
+    return response.data;
 };
 
 export const getParadas = async () => {
-  const res = await fetch(`${api.defaults.baseURL}/paradas`);
-  return res.json();
+    const response = await api.get('/rutas/paradas');
+    return response.data;
 };
 
 export default api;

@@ -17,11 +17,11 @@ CREATE TABLE usuarios (
 CREATE TABLE rutas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
-    tipo ENUM('actual', 'optimizada') DEFAULT 'actual', 
+    tipo ENUM('actual', 'optimizada') DEFAULT 'actual',
     color_hex VARCHAR(7) DEFAULT '#69db34',
     distancia_km DECIMAL(5, 2) DEFAULT 0.0,
-    tiempo_estimado_min INT DEFAULT 0,      
-    eficiencia_porcentaje INT DEFAULT 0     
+    tiempo_estimado_min INT DEFAULT 0,
+    eficiencia_porcentaje INT DEFAULT 0
 );
 
 -- 📍 Cumple Punto 3 y 5: Visualización de paradas en Leaflet.js
@@ -41,7 +41,7 @@ CREATE TABLE zonas_criticas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100),
     nivel_congestion ENUM('bajo', 'medio', 'alto'),
-    descripcion_impacto TEXT, 
+    descripcion_impacto TEXT,
     latitud DECIMAL(10, 8),
     longitud DECIMAL(11, 8),
     radio_metros INT DEFAULT 300

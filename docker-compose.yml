@@ -1,85 +1,126 @@
 services:
 
-
+  # ==========================================
+  # FRONTEND - React + Vite + Nginx
+  # ==========================================
   frontend:
-    build: ./frontend
-    container_name: lab-frontend
-    restart: always
-    ports:
-      - "3000:3000"
-    depends_on:
-      - mysql
-      - postgres
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
 
+    container_name: movesmart-frontend
 
-  backend:
-    build: .
-    container_name: backend_app
     restart: unless-stopped
 
     ports:
-      - "8080:80"
+      - "3000:80"
+
+    depends_on:
+      - backend
+
+    networks:
+      - movesmart_network
+
+
+  # ==========================================
+  # BACKEND - Node.js + Express
+  # ==========================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+    container_name: movesmart-backend
+
+    restart: unless-stopped
+
+    ports:
+      - "4000:4000"
 
     env_file:
       - .env
 
-    environment:
-      BACKEND_DB_HOST: ${BACKEND_DB_HOST}
-      BACKEND_DB_NAME: ${BACKEND_DB_NAME}
-      BACKEND_DB_USER: ${BACKEND_DB_USER}
-      BACKEND_DB_PASSWORD: ${BACKEND_DB_PASSWORD}
-
-    volumes:
-      - wp_data:/var/www/html
-
     depends_on:
-      db:
+      mysql:
         condition: service_healthy
 
     networks:
-      - wp_network
+      - movesmart_network
 
 
+  # ==========================================
+  # DATABASE - MySQL
+  # ==========================================
   mysql:
     image: mysql:8.4
-    container_name: lab-mysql
-    restart: always
+
+    container_name: movesmart-mysql
+
+    restart: unless-stopped
+
     environment:
-      MYSQL_ROOT_PASSWORD: example
-      MYSQL_DATABASE: test_mysql
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+
     ports:
       - "3306:3306"
+
     volumes:
       - mysql_data:/var/lib/mysql
 
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-p${DB_PASSWORD}"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+    networks:
+      - movesmart_network
+
+
+  # ==========================================
+  # PHPMYADMIN - Administración de MySQL
+  # ==========================================
   phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name: wordpress_phpmyadmin
-    restart: always
+    image: phpmyadmin:latest
+
+    container_name: movesmart-phpmyadmin
+
+    restart: unless-stopped
 
     ports:
       - "8081:80"
 
-    env_file:
-      - .env
-
     environment:
-      PMA_HOST: ${PMA_HOST}
-      PMA_PORT: ${PMA_PORT}
+      PMA_HOST: mysql
+      PMA_PORT: 3306
 
     depends_on:
-      db:
+      mysql:
         condition: service_healthy
 
     networks:
-      - wp_network
+      - movesmart_network
 
 
+# ==========================================
+# VOLUMES
+# ==========================================
 volumes:
-  wp_data:
-  db_data:
+  mysql_data:
 
 
+# ==========================================
+# NETWORK
+# ==========================================
 networks:
-  wp_network:
+  movesmart_network:
     driver: bridge
