@@ -1315,3 +1315,34 @@ El objetivo final es obtener una versión de MOVE SMART que sea:
 ```
 
 **MOVE SMART** busca evolucionar desde una aplicación ejecutada directamente sobre el entorno local hacia una arquitectura reproducible mediante **Docker + Docker Compose**, manteniendo separadas las responsabilidades de frontend, backend y base de datos.
+
+```La Arquitectura queda así:
+
+                    TU PC
+                      │
+          ┌───────────┴───────────┐
+          │                       │
+          ▼                       ▼
+ localhost:3000             localhost:4000
+          │                       │
+          ▼                       ▼
+ ┌────────────────┐       ┌────────────────┐
+ │    FRONTEND     │ HTTP  │    BACKEND     │
+ │ React + Nginx   │──────►│ Node + Express │
+ │      :80        │       │      :4000     │
+ └────────────────┘       └───────┬────────┘
+                                  │
+                                  │ mysql:3306
+                                  ▼
+                          ┌────────────────┐
+                          │     MYSQL      │
+                          │     :3306      │
+                          │ move_smart_db  │
+                          └───────▲────────┘
+                                  │
+                                  │
+                          ┌───────┴────────┐
+                          │   phpMyAdmin   │
+                          │ localhost:8081 │
+                          └────────────────┘
+```
