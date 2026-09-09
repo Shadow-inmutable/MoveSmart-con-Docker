@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
+import 'dotenv/config';
 
 import { initDB } from './config/db.js';
 import { attachDB } from './middlewares/attachDB.js';
@@ -8,7 +8,6 @@ import { attachDB } from './middlewares/attachDB.js';
 import usuariosRoutes from './routes/usuariosRoutes.js';
 import rutasRoutes from './routes/rutasRoutes.js';
 
-dotenv.config();
 
 const app = express();
 
