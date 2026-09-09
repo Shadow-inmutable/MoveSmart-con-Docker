@@ -17,7 +17,7 @@ export default function Login() {
       localStorage.setItem('user', JSON.stringify(data.user));
 
       // 🔀 REDIRECCIÓN POR ROL
-      if (data.user.rol === 'gestor') {
+      if (['admin', 'gestor'].includes(data.user.rol)) {
         navigate('/dashboard'); // Si es gestor, va al panel de analítica
       } else {
         navigate('/'); // Si es ciudadano, va al mapa normal
@@ -176,7 +176,7 @@ export default function Login() {
           ¿No tienes una cuenta?{' '}
 
           <Link
-            to="/registro"
+            to="/register"
             style={{
               color: '#4318FF',
               textDecoration: 'none',
