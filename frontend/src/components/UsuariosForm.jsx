@@ -4,7 +4,7 @@ import api from "../api/api";
 export default function UsuariosForm() {
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Estado inicial del formulario
   const estadoInicial = { nombre: "", email: "", password: "", rol: "gestor" };
   const [form, setForm] = useState(estadoInicial);
@@ -43,25 +43,30 @@ export default function UsuariosForm() {
   // 🟢 CREAR O ACTUALIZAR USUARIO
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      if (editandoId) {
-        // Lógica de Actualización (PUT)
-        await api.put(`/usuarios/${editandoId}`, form); // Tu endpoint PUT /usuarios/:id
-        alert("Usuario actualizado correctamente");
-      } else {
-        // Lógica de Creación (POST)
-        await api.post("/usuarios/register", form); // Tu endpoint POST /usuarios/register
-        alert("Usuario registrado correctamente");
-      }
-      cancelarEdicion();
-      fetchUsuarios(); // Recargar la lista
+        if (editandoId) {
+            await api.put(`/usuarios/${editandoId}`, form);
+            alert("Usuario actualizado correctamente");
+        } else {
+            await api.post("/usuarios/crear-admin", form);
+            alert("Usuario registrado correctamente");
+        }
+
+        cancelarEdicion();
+        fetchUsuarios();
+
     } catch (error) {
-      console.error("Error al guardar usuario:", error);
-      // Intenta capturar el mensaje de error del backend si existe
-      const mensajeError = error.response?.data?.message || "Hubo un error al procesar la solicitud";
-      alert(mensajeError);
+        console.error("Error al guardar usuario:", error);
+
+        const mensajeError =
+            error.response?.data?.error ||
+            error.response?.data?.message ||
+            "Hubo un error al procesar la solicitud";
+
+        alert(mensajeError);
     }
-  };
+};
 
   // 🟡 PREPARAR EDICIÓN
   const handleEdit = (usuario) => {
