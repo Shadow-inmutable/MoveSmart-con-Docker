@@ -1,17 +1,53 @@
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'clave_secreta_manizales';
+const getJwtSecret = () => {
+
+    const secret = process.env.JWT_SECRET;
+
+    if (!secret) {
+        throw new Error('JWT_SECRET no está configurado');
+    }
+
+    return secret;
+};
 
 export const verificarToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    if (!authHeader) return res.status(403).json({ success: false, error: 'Token requerido' });
+
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+        return res.status(401).json({
+            success: false,
+            error: 'Token requerido'
+        });
+    }
+
+    const [scheme, token] = authHeader.split(' ');
+
+    if (scheme !== 'Bearer' || !token) {
+        return res.status(401).json({
+            success: false,
+            error: 'Formato de token inválido'
+        });
+    }
 
     try {
-        const token = authHeader.split(' ')[1];
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded; 
+
+        const decoded = jwt.verify(
+            token,
+            getJwtSecret()
+        );
+
+        req.user = decoded;
+
         next();
+
     } catch (error) {
-        return res.status(401).json({ success: false, error: 'Token inválido' });
+
+        return res.status(401).json({
+            success: false,
+            error: 'Token inválido o expirado'
+        });
+
     }
 };
