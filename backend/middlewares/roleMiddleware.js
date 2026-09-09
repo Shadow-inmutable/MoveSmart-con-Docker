@@ -1,4 +1,4 @@
-export const verificarRol = (...rolesPermitidos) => {
+export const requireRole = (...rolesPermitidos) => {
     return (req, res, next) => {
 
         if (!req.user) {
