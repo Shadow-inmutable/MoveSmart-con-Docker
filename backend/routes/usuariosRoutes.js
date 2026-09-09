@@ -19,7 +19,7 @@ router.post('/login', login);
 
 // RUTAS ADMINISTRATIVAS
 
-router.post('/crear-admin', requireRole('admin'), crearUsuarioAdmin);
+router.post('/crear-admin',verificarToken, requireRole('admin'), crearUsuarioAdmin);
 router.get('/', verificarToken, requireRole('admin'), getUsuarios);
 router.put('/:id', verificarToken, requireRole('admin'), updateUsuario);
 router.delete('/:id', verificarToken, requireRole('admin'), deleteUsuario);
