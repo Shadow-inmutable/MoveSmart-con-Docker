@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import api from "../api/api";
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -165,6 +165,27 @@ export default function Login() {
           >
             Iniciar Sesión
           </button>
+
+          <p
+          style={{
+            marginTop: '25px',
+            fontSize: '0.85rem',
+            color: '#707EAE',
+          }}
+        >
+          ¿No tienes una cuenta?{' '}
+
+          <Link
+            to="/registro"
+            style={{
+              color: '#4318FF',
+              textDecoration: 'none',
+              fontWeight: '700',
+            }}
+          >
+            Crear una cuenta
+          </Link>
+        </p>
         </form>
         
         <p style={{marginTop: '25px', fontSize: '0.8rem', color: '#707EAE'}}>

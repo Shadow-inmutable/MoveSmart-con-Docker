@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Login from './pages/Login';
+import register from './pages/register';
 import Mapa from './pages/Mapa';
 import Dashboard from './pages/Dashboard';
 import ParadasForm from './pages/ParadasForms';
@@ -18,6 +19,7 @@ function App() {
         {/* RUTAS PÚBLICAS */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<register />} />
         <Route path="/mapa" element={<Mapa />} />
 
         {/* RUTAS PROTEGIDAS PARA EL GESTOR */}
