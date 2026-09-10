@@ -1,5 +1,7 @@
 USE move_smart_db;
 
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
 
 -- ==========================================
 -- DATOS INICIALES: RUTAS
