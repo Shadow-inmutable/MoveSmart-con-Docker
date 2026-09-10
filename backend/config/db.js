@@ -3,12 +3,6 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-/**
- * Crea y verifica el pool de conexiones MySQL.
- *
- * El pool permite reutilizar conexiones y atender
- * múltiples peticiones simultáneamente.
- */
 export const createMySQLConnection = async () => {
     try {
         const pool = mysql.createPool({
@@ -18,15 +12,16 @@ export const createMySQLConnection = async () => {
             database: process.env.DB_NAME,
             port: Number(process.env.DB_PORT) || 3306,
 
+            // Configuración explícita para trabajar con UTF-8 completo
+            charset: 'utf8mb4',
+
             waitForConnections: true,
             connectionLimit: 10,
             queueLimit: 0,
-
             enableKeepAlive: true,
             keepAliveInitialDelayMs: 0
         });
 
-        // Verificar que MySQL esté disponible
         await pool.query('SELECT 1');
 
         console.log(
@@ -34,7 +29,6 @@ export const createMySQLConnection = async () => {
         );
 
         return pool;
-
     } catch (error) {
         console.error(
             '❌ Error fatal al conectar con MySQL:',
@@ -45,9 +39,6 @@ export const createMySQLConnection = async () => {
     }
 };
 
-/**
- * Inicializador utilizado por index.js.
- */
 export const initDB = async () => {
     return await createMySQLConnection();
 };
