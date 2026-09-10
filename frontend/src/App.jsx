@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Login from './pages/Login';
-import Register from './pages/register';
+import Register from './pages/Register';
 import Mapa from './pages/Mapa';
 import Dashboard from './pages/Dashboard';
 import ParadasForm from './pages/ParadasForms';
