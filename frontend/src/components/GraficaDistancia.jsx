@@ -9,20 +9,116 @@ import {
   Legend,
 } from "recharts";
 
-export default function GraficaDistancia({ data }) {
+export default function GraficaDistancia({
+  data,
+}) {
   return (
-    <div style={{ width: "100%", height: 220, marginTop: "20px" }}>
-      <h4 style={{ marginBottom: "10px" }}>📏 Distancia por Ruta (km)</h4>
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="ruta" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="distancia" fill="#3b82f6" name="Distancia (km)" />
-        </BarChart>
-      </ResponsiveContainer>
+    <div style={containerStyle}>
+
+      <h4 style={titleStyle}>
+        📏 Base vs Distancia Vial
+      </h4>
+
+      <div style={chartContainerStyle}>
+
+        <ResponsiveContainer
+          width="100%"
+          height="100%"
+        >
+
+          <BarChart
+            data={data}
+            margin={{
+              top: 10,
+              right: 8,
+              left: -12,
+              bottom: 8,
+            }}
+          >
+
+            <CartesianGrid
+              strokeDasharray="3 3"
+            />
+
+            <XAxis
+              dataKey="ruta"
+              tick={{
+                fontSize: 9,
+              }}
+              interval={0}
+              angle={-15}
+              textAnchor="end"
+              height={45}
+            />
+
+            <YAxis
+              tick={{
+                fontSize: 9,
+              }}
+              width={38}
+            />
+
+            <Tooltip />
+
+            <Legend
+              wrapperStyle={{
+                fontSize: "10px",
+              }}
+            />
+
+            <Bar
+              dataKey="distancia_base"
+              fill="#f59e0b"
+              name="Distancia base (km)"
+              radius={[
+                5,
+                5,
+                0,
+                0,
+              ]}
+            />
+
+            <Bar
+              dataKey="distancia_vial"
+              fill="#2563eb"
+              name="Distancia vial (km)"
+              radius={[
+                5,
+                5,
+                0,
+                0,
+              ]}
+            />
+
+          </BarChart>
+
+        </ResponsiveContainer>
+
+      </div>
+
     </div>
   );
 }
+
+const containerStyle = {
+  width: "100%",
+  height: "100%",
+  minWidth: 0,
+  minHeight: 0,
+  display: "flex",
+  flexDirection: "column",
+};
+
+const titleStyle = {
+  flexShrink: 0,
+  margin: "0 0 8px 0",
+  color: "#2B3674",
+  fontSize: "13px",
+  fontWeight: "800",
+};
+
+const chartContainerStyle = {
+  flex: 1,
+  minHeight: 0,
+  minWidth: 0,
+};

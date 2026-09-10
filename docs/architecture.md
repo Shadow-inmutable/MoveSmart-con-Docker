@@ -665,3 +665,37 @@ Las principales mejoras para producción serían:
 - Monitoreo.
 - Logs centralizados.
 - Restricción de phpMyAdmin.
+
+# 23. Arquitectura de la séguridad de los usuarios y roles
+
+                         MOVE SMART
+                              │
+              ┌───────────────┴───────────────┐
+              │                               │
+         INFORMACIÓN                      GESTIÓN
+          PÚBLICA                       AUTENTICADA
+              │                               │
+       ┌──────┼──────┐              ┌─────────┼─────────┐
+       │      │      │              │                   │
+     rutas  zonas  paradas       gestor               admin
+       │      │      │              │                   │
+       └──────┴──────┘              ├─ rutas             ├─ rutas
+              │                     ├─ zonas             ├─ zonas
+              │                     └─ paradas            ├─ paradas
+              │                                           │
+       Ciudadano puede                                  usuarios
+       CONSULTAR                                        │
+                                                        └─ solo admin
+
+**Así tenemos una arquitecura mas limpia.**
+
+rutasRoutes.js
+      │
+      ├── verificarToken
+      │
+      └── requireRole('gestor', 'admin')
+                  │
+                  ▼
+        rutasController.js
+                  │
+                  └── ejecuta

@@ -1,26 +1,27 @@
-import { MapContainer, TileLayer, Marker, Popup, Circle, Polyline, Tooltip, useMap } from "react-leaflet";
+import React, { useState, useEffect, useMemo } from "react";
+import { MapContainer, TileLayer, Circle, Polyline, Tooltip } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { useEffect, useState } from "react";
 import api from "../api/api";
-import L from "leaflet";
+import { calcularMetricasRutas } from "../../services/motorMovilidad";
 
-// Componente para auto-ajustar la cámara a la ruta seleccionada
-function RecenterMap({ coords }) {
-  const map = useMap();
-  useEffect(() => {
-    if (coords && coords.length > 0) {
-      const bounds = L.latLngBounds(coords);
-      map.fitBounds(bounds, { padding: [50, 50] });
-    }
-  }, [coords, map]);
-  return null;
-}
-
-export default function MapaLeaflet({ rutaSeleccionada }) {
+export default function MapaLeaflet({
+  rutaSeleccionada: rutaSeleccionadaProp = null,
+  mostrarSelectorRuta = true,
+  onMetricasRuta = null,
+}) {
   const [puntos, setPuntos] = useState([]);
   const [zonas, setZonas] = useState([]);
   const [rutas, setRutas] = useState([]);
+  const [rutaSeleccionada, setRutaSeleccionada] = useState(rutaSeleccionadaProp);
+  const [geometrias, setGeometrias] = useState({});
+  const [cargandoRutas, setCargandoRutas] = useState(false);
+  const [errorRouting, setErrorRouting] = useState(false);
+
   const position = [5.0689, -75.5174];
+
+  useEffect(() => {
+    setRutaSeleccionada(rutaSeleccionadaProp || null);
+  }, [rutaSeleccionadaProp]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,94 +31,119 @@ export default function MapaLeaflet({ rutaSeleccionada }) {
           api.get("/rutas/zonas"),
           api.get("/rutas"),
         ]);
-        if (paradasRes.data.success) setPuntos(paradasRes.data.data);
-        if (zonasRes.data.success) setZonas(zonasRes.data.data);
-        if (rutasRes.data.success) setRutas(rutasRes.data.data);
-      } catch (err) { console.error("Error:", err); }
+        if (paradasRes.data?.success) setPuntos(paradasRes.data.data || []);
+        if (zonasRes.data?.success) setZonas(zonasRes.data.data || []);
+        if (rutasRes.data?.success) setRutas(rutasRes.data.data || []);
+      } catch (error) {
+        console.error("Error cargando datos del mapa:", error);
+      }
     };
     fetchData();
   }, []);
 
-  const getZonaStyle = (nivel) => {
-    const n = nivel?.toLowerCase() || "";
-    if (n === "bajo") return { color: "#22c55e", radius: 200 };
-    if (n === "medio") return { color: "#facc15", radius: 350 };
-    if (n === "alto") return { color: "#ef4444", radius: 500 };
-    return { color: "#3b82f6", radius: 250 };
+  const rutasConParadas = useMemo(() => {
+    return rutas.map((ruta) => ({
+      ...ruta,
+      paradas: puntos
+        .filter((p) => Number(p.ruta_id) === Number(ruta.id))
+        .sort((a, b) => Number(a.orden || 0) - Number(b.orden || 0)),
+    })).filter((ruta) => ruta.paradas.length > 0);
+  }, [rutas, puntos]);
+
+  useEffect(() => {
+    if (rutasConParadas.length === 0) return;
+    let cancelado = false;
+    const cargarMetricasViales = async () => {
+      setCargandoRutas(true);
+      setErrorRouting(false);
+      try {
+        const resultados = await calcularMetricasRutas(rutasConParadas);
+        if (cancelado) return;
+        setGeometrias(resultados);
+        if (onMetricasRuta) onMetricasRuta(resultados);
+        if (rutasConParadas.length > 0 && Object.keys(resultados).length === 0) {
+          setErrorRouting(true);
+        }
+      } catch (error) {
+        console.error("Error calculando métricas viales:", error);
+        if (!cancelado) {
+          setGeometrias({});
+          if (onMetricasRuta) onMetricasRuta({});
+          setErrorRouting(true);
+        }
+      } finally {
+        if (!cancelado) setCargandoRutas(false);
+      }
+    };
+    cargarMetricasViales();
+    return () => { cancelado = true; };
+  }, [rutasConParadas, onMetricasRuta]);
+
+  const seleccionarRuta = (ruta) => {
+    if (rutaSeleccionada && Number(rutaSeleccionada.id) === Number(ruta.id)) {
+      setRutaSeleccionada(null);
+    } else {
+      setRutaSeleccionada(ruta);
+    }
   };
 
   return (
-    <div style={{ height: "100%", width: "100%", position: "relative" }}>
-      <MapContainer center={position} zoom={13} style={{ height: "100%", width: "100%" }}>
-        
-        {/* 🗺️ ESTE ES EL MAPA ORIGINAL (OpenStreetMap) */}
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        />
-
-        {rutaSeleccionada && (
-          <RecenterMap 
-            coords={puntos
-              .filter(p => p.ruta_id === rutaSeleccionada.id)
-              .map(p => [p.latitud, p.longitud])} 
-          />
-        )}
-
-        {rutas.map((ruta) => {
-          const esSeleccionada = rutaSeleccionada?.id === ruta.id;
-          const coordenadasRuta = puntos
-            .filter((p) => p.ruta_id === ruta.id)
-            .sort((a, b) => a.orden - b.orden)
-            .map((p) => [p.latitud, p.longitud]);
-
-          if (coordenadasRuta.length === 0) return null;
-
+    <div style={{ height: "100%", width: "100%", position: "relative", overflow: "hidden", borderRadius: "inherit" }}>
+      <MapContainer center={position} zoom={13} style={{ height: "100%", width: "100%", minHeight: "500px" }}>
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' />
+        {rutasConParadas.map((ruta) => {
+          const geometria = geometrias[ruta.id];
+          if (!geometria?.geometry?.length) return null;
+          const activa = rutaSeleccionada && Number(rutaSeleccionada.id) === Number(ruta.id);
           return (
-            <Polyline
-              key={ruta.id}
-              positions={coordenadasRuta}
-              pathOptions={{
-                color: ruta.color_hex || "#4318ff",
-                weight: esSeleccionada ? 8 : 4,
-                opacity: esSeleccionada ? 1 : 0.6,
-                lineJoin: "round"
-              }}
-            >
-              <Tooltip sticky><b>{ruta.nombre}</b></Tooltip>
+            <Polyline key={ruta.id} positions={geometria.geometry}
+              pathOptions={{ color: ruta.color_hex || "#2563eb", weight: activa ? 9 : 5, opacity: activa ? 1 : 0.65 }} >
+              <Tooltip sticky><strong>{ruta.nombre}</strong></Tooltip>
             </Polyline>
           );
         })}
-
-        {/* Zonas Críticas */}
         {zonas.map((zona) => {
-          const { color, radius } = getZonaStyle(zona.nivel_congestion);
+          const { color, fillColor, radius } = getZonaStyle(zona.nivel_congestion);
           return (
-            <Circle
-              key={zona.id}
-              center={[zona.latitud, zona.longitud]}
-              radius={radius}
-              pathOptions={{ 
-                color: color, 
-                fillColor: color, 
-                fillOpacity: 0.2, 
-                weight: 2, 
-                dashArray: "5, 10" 
-              }}
-            />
-          );
-        })}
-
-        {/* Paradas */}
-        {puntos.map((punto) => {
-          if (rutaSeleccionada && punto.ruta_id !== rutaSeleccionada.id) return null;
-          return (
-            <Marker key={punto.id} position={[punto.latitud, punto.longitud]}>
-              <Popup>🚏 {punto.nombre}</Popup>
-            </Marker>
+            <Circle key={zona.id} center={[Number(zona.latitud), Number(zona.longitud)]}
+              radius={Number(zona.radio_metros) || radius}
+              pathOptions={{ color, fillColor, fillOpacity: 0.18, weight: 3, dashArray: "8 8" }} />
           );
         })}
       </MapContainer>
+
+      {mostrarSelectorRuta && (
+        <div style={{ position: "absolute", top: "15px", left: "15px", zIndex: 1000, width: "280px", background: "#fff", borderRadius: "16px", padding: "14px", boxShadow: "0 8px 25px rgba(0,0,0,0.16)" }}>
+          <div style={{ fontSize: "15px", fontWeight: "800", marginBottom: "10px" }}>🚌 Seleccionar ruta</div>
+          {rutasConParadas.map((ruta) => {
+            const activa = rutaSeleccionada && Number(rutaSeleccionada.id) === Number(ruta.id);
+            const color = ruta.color_hex || "#2563eb";
+            return (
+              <button key={ruta.id} onClick={() => seleccionarRuta(ruta)}
+                style={{ display: "flex", alignItems: "center", gap: "9px", padding: "9px", borderRadius: "10px", border: activa ? `2px solid ${color}` : "1px solid #e5e7eb", background: activa ? `${color}18` : "#fff" }}>
+                <span style={{ width: "13px", height: "13px", borderRadius: "50%", background: color }} />
+                <span style={{ flex: 1, fontWeight: activa ? "800" : "600" }}>{ruta.nombre}</span>
+                <span style={{ fontSize: "11px", color: "#6b7280" }}>{ruta.paradas.length} paradas</span>
+              </button>
+            );
+          })}
+          {rutaSeleccionada && (
+            <button onClick={() => setRutaSeleccionada(null)} style={{ marginTop: "9px", padding: "8px", borderRadius: "9px", background: "#f3f4f6" }}>
+              Ver todas las rutas
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
+}
+
+function getZonaStyle(nivel) {
+  switch (nivel) {
+    case "alta": return { color: "#dc2626", fillColor: "#f87171", radius: 300 };
+    case "media": return { color: "#f59e0b", fillColor: "#fcd34d", radius: 200 };
+    case "baja": return { color: "#22c55e", fillColor: "#86efac", radius: 150 };
+    default: return { color: "#6b7280", fillColor: "#d1d5db", radius: 100 };
+  }
 }
