@@ -1,20 +1,23 @@
-# ==================================================
-#  Construcción de la aplicación Imagen base de Node.js
-# ==================================================
+# Imagen base ligera
 FROM node:22-alpine
 
-# Directorio de trabajo dentro del contenedor
+# Directorio de trabajo
 WORKDIR /app
 
-# Copiar los archivos de dependencias
+# Copiar dependencias
 COPY package*.json ./
 
-# Instalar dependencias
+# Instalar dependencias (solo producción)
 RUN npm ci --omit=dev
-# Copiar el código fuente
-COPY . .
-# Exponer el puerto de la aplicación
-EXPOSE 4000
-# Comando para iniciar la aplicación donde ejecute el archivo index.js
-CMD ["node", "index.js"]
 
+# Copiar código fuente
+COPY . .
+
+# Variables de entorno (opcional, si usas .env)
+ENV NODE_ENV=production
+
+# Exponer puerto
+EXPOSE 4000
+
+# Comando de inicio
+CMD ["node", "index.js"]
