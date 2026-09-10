@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { MapContainer, TileLayer, Circle, Polyline, Tooltip } from "react-leaflet";
+import { MapContainer, TileLayer, Circle, Polyline, Tooltip, CircleMarker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import api from "../api/api";
 import { calcularMetricasRutas } from "../../services/motorMovilidad";
@@ -92,6 +92,8 @@ export default function MapaLeaflet({
       <MapContainer center={position} zoom={13} style={{ height: "100%", width: "100%", minHeight: "500px" }}>
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' />
+
+        {/* Rutas con polylines */}
         {rutasConParadas.map((ruta) => {
           const geometria = geometrias[ruta.id];
           if (!geometria?.geometry?.length) return null;
@@ -103,6 +105,25 @@ export default function MapaLeaflet({
             </Polyline>
           );
         })}
+
+        {/* Paradas como CircleMarker */}
+        {rutasConParadas.map((ruta) => {
+          const color = ruta.color_hex || "#2563eb";
+          return ruta.paradas.map((parada) => (
+            <CircleMarker
+              key={parada.id}
+              center={[Number(parada.latitud), Number(parada.longitud)]}
+              radius={6}
+              pathOptions={{ color, fillColor: color, fillOpacity: 1 }}
+            >
+              <Tooltip sticky>
+                <strong>{parada.nombre}</strong>
+              </Tooltip>
+            </CircleMarker>
+          ));
+        })}
+
+        {/* Zonas críticas */}
         {zonas.map((zona) => {
           const { color, fillColor, radius } = getZonaStyle(zona.nivel_congestion);
           return (
